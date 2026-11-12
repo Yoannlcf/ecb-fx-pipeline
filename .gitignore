@@ -1,0 +1,24 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+
+# Secrets et configuration locale
+.env
+
+# Données locales (Bronze) : jamais versionnées
+data/*
+!data/.gitkeep
+
+# dbt
+dbt/target/
+dbt/dbt_packages/
+dbt/logs/
+
+# OS / éditeurs
+.DS_Store
+.idea/
+.vscode/
