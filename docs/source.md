@@ -135,7 +135,7 @@ Une devise disparaît de la liste quand :
 
 ```bash
 curl -s "https://data-api.ecb.europa.eu/service/data/EXR/D..EUR.SP00.A?startPeriod=2005-11-10&endPeriod=2005-11-10&format=csvdata" | tail -n +2 | cut -d, -f3 | sort > /tmp/2005.txt
-tail -n +2 /tmp/exr.csv | cut -d, -f3 | sort > /tmp/2026.txt
+curl -s "https://data-api.ecb.europa.eu/service/data/EXR/D..EUR.SP00.A?startPeriod=2026-11-13&endPeriod=2026-11-13&format=csvdata" | tail -n +2 | cut -d, -f3 | sort > /tmp/2026.txt
 comm -23 /tmp/2005.txt /tmp/2026.txt
 ```
 
