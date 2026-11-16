@@ -87,13 +87,8 @@ Les tables de faits et de dimensions se construisent en Gold, à partir de Silve
 | Requête | Code HTTP | Corps de la réponse |
 |---|---|---|
 | Samedi 14 novembre 2026 | 200 | Vide |
-| Mardi 1er décembre 2026 (futur) | 000 | **À refaire** : aucune réponse HTTP reçue |
+| Mardi 1er décembre 2026 (futur) | 200 | Vide |
 
-Le `000` vient de curl, pas de l'API : la connexion n'a pas abouti. À relancer avec affichage des erreurs, puis mettre à jour la ligne du tableau :
-
-```bash
-curl -sS -i "https://data-api.ecb.europa.eu/service/data/EXR/D..EUR.SP00.A?startPeriod=2026-12-01&endPeriod=2026-12-01&format=csvdata"
-```
 
 **Interprétation :** une réponse 200 vide doit être traitée comme « pas de publication ce jour-là », et non comme une erreur. La BCE ne publie ni le week-end ni les jours de fermeture TARGET : un samedi vide est donc le comportement normal. Si le pipeline levait une erreur, il échouerait tous les week-ends, et les vraies alertes seraient noyées dans de fausses alertes.
 
@@ -107,7 +102,7 @@ En revanche, « vide » n'est normal que si le jour n'était pas censé être pu
 | 400 | erreur dans ma requête : échec immédiat, pas de retry |
 | 5xx, timeout, 000 (pas de connexion) | erreur technique : retry avec délai croissant, puis échec. Jamais interprété comme « pas de publication » |
 
-**Écart à éclaircir :** la [page Status codes de l'API](https://data.ecb.europa.eu/help/api/status-codes) annonce un **404 « No results found »** quand aucune donnée ne correspond à la requête, alors que j'ai observé un **200 vide** pour le samedi. Tant que l'écart n'est pas compris, le client accepte les deux comme « aucune donnée ». La relance du 1er décembre devrait aider à trancher.
+**Écart à éclaircir :** la [page Status codes de l'API](https://data.ecb.europa.eu/help/api/status-codes) annonce un **404 « No results found »** quand aucune donnée ne correspond à la requête, alors que j'ai observé un **200 vide** pour un samedi et pour une date future (1er décembre 2026). Tant que l'écart n'est pas compris, le client accepte les deux comme « aucune donnée ».
 
 ## 4. Sens du taux
 
@@ -132,10 +127,11 @@ Contrôle de bon sens : 1 EUR vaut plus que 1 USD, donc 100 USD doivent donner m
 
 Une devise disparaît de la liste quand :
 
-- **le pays adopte l'euro** : sa monnaie n'a plus de taux contre l'euro, puisqu'elle n'existe plus ;
+- **le pays adopte l'euro** : sa monnaie n'a plus de taux contre l'euro, puisqu'elle n'existe plus (ici : SIT, CYP, MTL, SKK, EEK, LVL, LTL, HRK, BGN) ;
 - **la BCE suspend la publication** : par exemple, le dernier taux EUR/RUB a été publié le 1er mars 2022, la BCE ne pouvant plus fixer un taux représentatif du marché ([note technique du 2 mars 2022](https://www.ecb.europa.eu/services/using-our-site/technical-updates/html/ecb.technical_update220302.en.html)).
+- **cause à identifier** : ARS, DZD, MAD et TWD ne sont ni passées à l'euro ni concernées par une suspension documentée ici. Raison à vérifier dans la documentation de la BCE.
 
-**À faire :** nommer précisément les devises disparues en comparant les deux listes :
+**Résultat :** entre le 10/11/2005 et le 13/11/2026, 14 devises ont disparu et aucune n'est apparue (43 − 14 = 29) : ARS, BGN, CYP, DZD, EEK, HRK, LTL, LVL, MAD, MTL, RUB, SIT, SKK, TWD. Commandes utilisées :
 
 ```bash
 curl -s "https://data-api.ecb.europa.eu/service/data/EXR/D..EUR.SP00.A?startPeriod=2005-11-10&endPeriod=2005-11-10&format=csvdata" | tail -n +2 | cut -d, -f3 | sort > /tmp/2005.txt
